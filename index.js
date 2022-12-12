@@ -6,6 +6,7 @@ const helmet = require('helmet')
 const dotenv = require('dotenv')
 const userRoute=require('./routes/user')
 const postRoute=require('./routes/post')
+const commentRoute=require('./routes/comment')
 
 dotenv.config()
 
@@ -29,6 +30,7 @@ app.use((error,req,res,next) => {
 
 app.use('/api/users',userRoute);
 app.use('/api/posts',postRoute);
+app.use('/api/comments',commentRoute);
 
 app.listen(5000,() =>{
     console.log("Backend server is running...")
