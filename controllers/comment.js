@@ -64,6 +64,26 @@ const updateComment=async(req, res, next) =>{
     }
 }
 
+//***LIKE/DISLIKE COMMENT BY COMMENT ID***
+const likeDislikeComment=async (req, res, next) => {
+    let foundComment;
+    try{
+        foundComment = await Comment.findById(req.params.id)
+    }catch (err) {
+        return next(new HttpError("Something went wrong!", 500))
+    }
+    if(!foundComment){
+        return next(new HttpError("Could not find comment!",404))
+    }
+
+    if(!foundComment.likes.includes(req.body.userId)){
+        await foundComment.updateOne({$push:{likes: req.body.userId }})
+        res.status(200).json("Comment liked successfully")
+    }else{
+        await foundComment.updateOne({$pull:{likes: req.body.userId}})
+        res.status(200).json("Comment disliked successfully")
+    }
+}
 //***GET COMMENTS BY POSTID***
 const getCommentsByPostId=async (req, res, next) => {
     let foundComments
@@ -82,3 +102,4 @@ exports.addComment = addComment
 exports.deleteComment = deleteComment
 exports.updateComment = updateComment
 exports.getCommentsByPostId = getCommentsByPostId
+exports.likeDislikeComment = likeDislikeComment
