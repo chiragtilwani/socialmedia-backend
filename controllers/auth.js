@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 const HttpError=require('../models/HttpError')
 
 const register = async (req, res,next) => {
-    const { username, email, password } = req.body
+    const { name,username, email, password } = req.body
     //checking if email and username already exist
     let foundUser 
     try{
@@ -26,7 +26,7 @@ const register = async (req, res,next) => {
     }
 
     //create new user
-    let newUser = new User({username,email,password:hashedPassword})
+    let newUser = new User({name,username,email,password:hashedPassword})
     try{
         await newUser.save()
     }catch(err){
