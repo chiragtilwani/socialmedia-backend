@@ -20,6 +20,17 @@ app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
 
+
+app.use('/api/users',userRoute);
+app.use('/api/posts',postRoute);
+app.use('/api/comments',commentRoute);
+
+//***HANDLING ERROR FOR ROUTE NOT FOUND***
+app.use((req, res, next) => {
+    const error = new HttpError("could not find this route", 404)
+    return next(error)
+})
+
 //***ERROR HANDLING MIDDLEWARE***
 app.use((error,req,res,next) => {
     if(res.headerSent){
@@ -27,10 +38,6 @@ app.use((error,req,res,next) => {
     }
     res.status(error.code || 500).json({message:error.message || 'An unknown error occurred'})
 })
-
-app.use('/api/users',userRoute);
-app.use('/api/posts',postRoute);
-app.use('/api/comments',commentRoute);
 
 app.listen(5000,() =>{
     console.log("Backend server is running...")
