@@ -92,7 +92,7 @@ const getPostById = async(req, res, next) =>{
 
 const getTimlinePost=async (req,res,next) => {
     try{
-        const currentUser=await User.findById(req.body.userId)
+        const currentUser=await User.findById(req.params.userId)
         const currentUserPost=await Post.find({creatorId: currentUser._id})
         const friendsPost=await Promise.all(
             currentUser.followings.map(id=>Post.find({creatorId: id}))
