@@ -1,9 +1,38 @@
 const Post = require('../models/Post')
 const User = require('../models/User')
 const HttpError = require('../models/HttpError')
+const cloudinary = require('../middleware/cloudinary')
 
 const createPost = async (req, res, next) => {
-    const newPost = new Post(req.body)
+    console.log(req.body)
+    const { creatorId, desc, post } = req.body
+    let result;
+    if (post) {
+        try {
+            result = await cloudinary.uploader.upload(post, { folder: "socialMedia" })
+        } catch (err) {
+            console.log(err)
+            return next(new HttpError("Could not upload your post", 500))
+        }
+        const newPost = new Post({
+            creatorId,
+            desc,
+            post: {
+                public_id: result.public_id,
+                url: result.secure_url
+            }
+        })
+        try {
+            const savedPost = await newPost.save()
+            res.status(201).json(savedPost)
+        } catch (err) {
+            return next(new HttpError("Something went wrong!", 500))
+        }
+    }
+    const newPost = new Post({
+        creatorId,
+        desc,
+    })
     try {
         const savedPost = await newPost.save()
         res.status(201).json(savedPost)
@@ -51,6 +80,7 @@ const deletePost = async (req, res, next) => {
 
 const likeDislikePost = async (req, res, next) => {
     let foundPost;
+    console.log(req.body)
     try {
         foundPost = await Post.findById(req.params.id)
     } catch (err) {
@@ -77,28 +107,38 @@ const likeDislikePost = async (req, res, next) => {
     }
 }
 
-const getPostById = async(req, res, next) =>{
+const getPostById = async (req, res, next) => {
     let foundPost;
-    try{
+    try {
         foundPost = await Post.findById(req.params.id)
-    }catch(err){
+    } catch (err) {
         return next(new HttpError("Something went wrong!", 500))
     }
-    if(!foundPost){
+    if (!foundPost) {
         return next(new HttpError("Could not find post", 404))
     }
     res.status(200).json(foundPost)
 }
 
-const getTimlinePost=async (req,res,next) => {
-    try{
-        const currentUser=await User.findById(req.params.userId)
-        const currentUserPost=await Post.find({creatorId: currentUser._id})
-        const friendsPost=await Promise.all(
-            currentUser.followings.map(id=>Post.find({creatorId: id}))
+const getTimlinePost = async (req, res, next) => {
+    try {
+        const currentUser = await User.findById(req.params.userId)
+        const currentUserPost = await Post.find({ creatorId: currentUser._id })
+        const friendsPost = await Promise.all(
+            currentUser.followings.map(id => Post.find({ creatorId: id }))
         )
         res.status(200).json(currentUserPost.concat(...friendsPost))
-    }catch(err){
+    } catch (err) {
+        return next(new HttpError("Something went wrong", 500))
+    }
+}
+
+const getUserPost = async (req, res, next) => {
+    try {
+        // const currentUser=await User.findById(req.params.userId)
+        const currentUserPost = await Post.find({ creatorId: req.params.userId })
+        res.status(200).json(currentUserPost)
+    } catch (err) {
         return next(new HttpError("Something went wrong", 500))
     }
 }
@@ -109,3 +149,4 @@ exports.deletePost = deletePost
 exports.likeDislikePost = likeDislikePost
 exports.getPostById = getPostById
 exports.getTimlinePost = getTimlinePost
+exports.getUserPost = getUserPost

@@ -7,7 +7,7 @@ router.post('/register',authController.register)
 router.post('/login',authController.login)
 router.patch('/:id',userController.updateUser)
 router.delete('/:id',userController.deleteUser)
-router.get('/:id',userController.getUserById)
+router.get('/',userController.getUser)
 router.patch('/:id/follow',userController.followUser)
 router.patch('/:id/unfollow',userController.unfollowUser)
 

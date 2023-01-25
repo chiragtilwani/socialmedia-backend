@@ -7,7 +7,7 @@ const register = async (req, res,next) => {
     //checking if email and username already exist
     let foundUser 
     try{
-        foundUser = await User.findOne({$or:[{username:username},{email:email}]})
+        foundUser = await User.findOne({$or:[{username:username},{email:email}]},"-password")
     }catch(err){
         return next(new HttpError('Could not register,something went wrong',500))
     }

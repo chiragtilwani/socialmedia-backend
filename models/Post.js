@@ -10,9 +10,9 @@ const postSchema = new mongoose.Schema({
         type:String,
         max:500
     },
-    postImg:{
-        public_id:String,
-        url:String
+    post:{
+        public_id:{type:String,default:null},
+        url:{type:String,default:null}
     },
     likes:{
         type:Array,

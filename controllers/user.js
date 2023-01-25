@@ -40,10 +40,12 @@ const deleteUser= async (req, res,next) => {
     }
 }
 
-const getUserById=async (req, res, next) => {
+const getUser=async (req, res, next) => {
+    const userId=req.query.userId
+    const username=req.query.username
     let foundUser
     try{
-        foundUser = await User.findById(req.params.id)
+        foundUser =userId? await User.findById(userId,'-password'): await User.findOne({username: username},'-password')
     }catch(err){
         return next(new HttpError("Something went wrong!",500))
     }
@@ -96,6 +98,6 @@ const unfollowUser = async (req, res,next)=>{
 
 exports.updateUser = updateUser
 exports.deleteUser = deleteUser
-exports.getUserById = getUserById
+exports.getUser = getUser
 exports.followUser = followUser
 exports.unfollowUser = unfollowUser

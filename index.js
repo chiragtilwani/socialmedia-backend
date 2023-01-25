@@ -20,6 +20,14 @@ app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
 
+//adding headers to all responses
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Headers', 'Origin,X-Requested-with,Content-Type,Accept,Authorization')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE')
+
+    next()
+})
 
 app.use('/api/users',userRoute);
 app.use('/api/posts',postRoute);
