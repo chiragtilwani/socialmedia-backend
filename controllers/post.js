@@ -4,10 +4,12 @@ const HttpError = require('../models/HttpError')
 const cloudinary = require('../middleware/cloudinary')
 
 const createPost = async (req, res, next) => {
-    console.log(req.body)
     const { creatorId, desc, post } = req.body
     let result;
-    if (post) {
+    if (!post && !desc) {
+        return next(new HttpError("Cannot upload empty post!", 500))
+    }
+    if (post !== null) {
         try {
             result = await cloudinary.uploader.upload(post, { folder: "socialMedia" })
         } catch (err) {
@@ -28,16 +30,17 @@ const createPost = async (req, res, next) => {
         } catch (err) {
             return next(new HttpError("Something went wrong!", 500))
         }
-    }
-    const newPost = new Post({
-        creatorId,
-        desc,
-    })
-    try {
-        const savedPost = await newPost.save()
-        res.status(201).json(savedPost)
-    } catch (err) {
-        return next(new HttpError("Something went wrong!", 500))
+    } else {
+        const newPost = new Post({
+            creatorId,
+            desc,
+        })
+        try {
+            const savedPost = await newPost.save()
+            res.status(201).json(savedPost)
+        } catch (err) {
+            return next(new HttpError("Something went wrong!", 500))
+        }
     }
 }
 
@@ -71,6 +74,8 @@ const deletePost = async (req, res, next) => {
         return next(new HttpError("Could not find post", 404))
     }
     if (foundPost.creatorId === req.body.userId) {
+        const imgId = foundPost.post.public_id
+        await cloudinary.uploader.destroy(imgId)
         await Post.findByIdAndDelete(foundPost._id)
         res.status(200).json("Post has been deleted successfully")
     } else {
@@ -79,10 +84,11 @@ const deletePost = async (req, res, next) => {
 }
 
 const likeDislikePost = async (req, res, next) => {
-    let foundPost;
-    console.log(req.body)
+    let foundPost,creator,whoLiked;
     try {
         foundPost = await Post.findById(req.params.id)
+        creator=await User.findById(foundPost.creatorId)
+        whoLiked=await User.findById(req.body.userId)
     } catch (err) {
         return next(new HttpError("Something went wrong!", 500))
     }
@@ -93,6 +99,7 @@ const likeDislikePost = async (req, res, next) => {
     if (!foundPost.likes.includes(req.body.userId)) {
         try {
             await foundPost.updateOne({ $push: { likes: req.body.userId } })
+            await creator.updateOne({$push:{notifications:`${whoLiked.username} liked your your post.`}})
             res.status(200).json("Post has been liked successfully")
         } catch (err) {
             return next(new HttpError("Something went wrong", 500))

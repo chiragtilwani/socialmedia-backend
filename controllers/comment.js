@@ -1,18 +1,22 @@
 const Comment = require('../models/Comment')
 const HttpError = require('../models/HttpError')
+const User = require('../models/User')
 
 
 //***POST NEW COMMENT ON POST***
 const addComment =async (req, res,next) => {
     const {text,userId,postId} = req.body
-
-    const newComment = new Comment({text:text,creatorId:userId,postId:postId})
-    try{
-        newComment.save()
-    }catch(err){
-        return next(new HttpError("Something went wrong!",500))
+    if(text){
+        const newComment = new Comment({text:text,creatorId:userId,postId:postId})
+        try{
+            newComment.save()
+        }catch(err){
+            return next(new HttpError("Something went wrong!",500))
+        }
+        res.status(201).json(newComment)
+    }else{
+        return next(new HttpError("Cannot post empty comment!",400))
     }
-    res.status(201).json(newComment)
 }
 
 //***DELETE COMMENT BY COMMENT ID***
@@ -66,9 +70,11 @@ const updateComment=async(req, res, next) =>{
 
 //***LIKE/DISLIKE COMMENT BY COMMENT ID***
 const likeDislikeComment=async (req, res, next) => {
-    let foundComment;
+    let foundComment,creator;
     try{
         foundComment = await Comment.findById(req.params.id)
+        creator=await Comment.findById(foundComment.creatorId)
+        userWhoLikedComment=await User.findById(req.body.userId)
     }catch (err) {
         return next(new HttpError("Something went wrong!", 500))
     }
@@ -78,6 +84,7 @@ const likeDislikeComment=async (req, res, next) => {
 
     if(!foundComment.likes.includes(req.body.userId)){
         await foundComment.updateOne({$push:{likes: req.body.userId }})
+        await creator.updateOne({$push:{notifications:`${userWhoLikedComment.username} has liked your comment.`}})
         res.status(200).json("Comment liked successfully")
     }else{
         await foundComment.updateOne({$pull:{likes: req.body.userId}})

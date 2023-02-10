@@ -64,6 +64,7 @@ const followUser= async (req, res,next) => {
             {
                 await userToFollow.updateOne({$push:{followers:req.body.userId}})
                 await userWillFollow.updateOne({$push:{followings:req.params.id}})
+                await userToFollow.updateOne({$push:{notifications:`${userWillFollow.username} started following you.`}})
                 res.status(200).json("User followed successfully!")
             }else{
                 return next(new HttpError("You already follow this user",400))
@@ -96,8 +97,25 @@ const unfollowUser = async (req, res,next)=>{
     }
 }
 
+const clearNotifications =async (req,res,next)=>{
+    let foundUser
+    try{
+     foundUser=await User.findById(req.body.userId)
+    }catch(e){
+        return next(new HttpError("Something went wrong!",500))
+    }
+
+    if(foundUser){
+        await foundUser.updateOne({$set:{notifications:[]}})
+    }else{
+        return next(new HttpError("Could not find a user",404))
+    }
+    res.status(200).json('Popped all notifications')
+}
+
 exports.updateUser = updateUser
 exports.deleteUser = deleteUser
 exports.getUser = getUser
 exports.followUser = followUser
 exports.unfollowUser = unfollowUser
+exports.clearNotifications=clearNotifications
