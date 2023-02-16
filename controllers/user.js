@@ -2,6 +2,7 @@ const HttpError=require('../models/HttpError')
 const User=require('../models/User')
 const bcrypt=require('bcrypt')
 
+
 const updateUser=async(req,res,next)=>{
     if(req.body.userId===req.params.id || req.body.isAdmin)//bcz user itself or an Admin can only update or delete user
     {
@@ -53,6 +54,11 @@ const getUser=async (req, res, next) => {
         return next(new HttpError("User not found!",404))
     }
     res.status(200).json(foundUser)
+}
+
+const getAllUsers = async(req, res,next) =>{
+    const allUsers = await User.find({},"-password")
+    res.status(200).json(allUsers)
 }
 
 const followUser= async (req, res,next) => {
@@ -113,9 +119,11 @@ const clearNotifications =async (req,res,next)=>{
     res.status(200).json('Popped all notifications')
 }
 
+
 exports.updateUser = updateUser
 exports.deleteUser = deleteUser
 exports.getUser = getUser
+exports.getAllUsers = getAllUsers
 exports.followUser = followUser
 exports.unfollowUser = unfollowUser
 exports.clearNotifications=clearNotifications

@@ -9,6 +9,7 @@ router.patch('/clearNotifications',userController.clearNotifications)
 router.patch('/:id',userController.updateUser)
 router.delete('/:id',userController.deleteUser)
 router.get('/',userController.getUser)
+router.get('/allUsers',userController.getAllUsers)
 router.patch('/:id/follow',userController.followUser)
 router.patch('/:id/unfollow',userController.unfollowUser)
 

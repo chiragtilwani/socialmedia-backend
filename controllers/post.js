@@ -84,11 +84,11 @@ const deletePost = async (req, res, next) => {
 }
 
 const likeDislikePost = async (req, res, next) => {
-    let foundPost,creator,whoLiked;
+    let foundPost, creator, whoLiked;
     try {
         foundPost = await Post.findById(req.params.id)
-        creator=await User.findById(foundPost.creatorId)
-        whoLiked=await User.findById(req.body.userId)
+        creator = await User.findById(foundPost.creatorId)
+        whoLiked = await User.findById(req.body.userId)
     } catch (err) {
         return next(new HttpError("Something went wrong!", 500))
     }
@@ -99,7 +99,9 @@ const likeDislikePost = async (req, res, next) => {
     if (!foundPost.likes.includes(req.body.userId)) {
         try {
             await foundPost.updateOne({ $push: { likes: req.body.userId } })
-            await creator.updateOne({$push:{notifications:`${whoLiked.username} liked your your post.`}})
+            if (req.body.userId !== foundPost.creatorId) {
+                await creator.updateOne({ $push: { notifications: `${whoLiked.username} liked your your post.` } })
+            }
             res.status(200).json("Post has been liked successfully")
         } catch (err) {
             return next(new HttpError("Something went wrong", 500))

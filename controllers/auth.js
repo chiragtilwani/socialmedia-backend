@@ -1,7 +1,9 @@
 const User = require('../models/User')
 const bcrypt = require('bcrypt')
 const HttpError=require('../models/HttpError')
+const jwt =require('jsonwebtoken')
 
+require("dotenv").config();
 const register = async (req, res,next) => {
     const { name,username, email, password } = req.body
     //checking if email and username already exist
@@ -33,7 +35,13 @@ const register = async (req, res,next) => {
         return next(new HttpError('Could not register,something went wrong!',500))
     }
     //returning response
-    res.status(201).json(newUser)
+    res.status(201).json({
+        _id:newUser._id,
+        email:newUser.email,
+        name:newUser.name,
+        username:newUser.username,
+        token:getToken(newUser._id)
+    })
 }
 
 const login = async (req, res,next) => {
@@ -46,6 +54,7 @@ const login = async (req, res,next) => {
         return next(new HttpError("Could not login.something went wrong",500))
     }
     if(!foundUser){
+        console.log(foundUser)
         return next(new HttpError("Credentials seems to be wrong!",400))
     }
     
@@ -59,8 +68,18 @@ const login = async (req, res,next) => {
     if(!isValidPassword){
         return next(new HttpError("Credentials seems to be wrong!",400))
     }
-    
-    res.status(200).json(foundUser)
+
+    res.status(200).json({
+        _id:foundUser._id,
+        email:foundUser.email,
+        name:foundUser.name,
+        username:foundUser.username,
+        token:getToken(foundUser._id)
+    })
+}
+console.log(process.env.JWT_SECRET)
+const getToken=(id)=>{
+    return jwt.sign({id},process.env.JWT_SECRET,{expiresIn:'7d'})
 }
 
 exports.register = register
