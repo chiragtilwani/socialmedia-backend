@@ -3,36 +3,51 @@ const mongoose = require('mongoose')
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: [true,'Username is required'],
-        min: [3,'Username must contain atleast 3 characters'],
-        max: [50,'Username must contain atmost 50 characters'],
-        unique: [true,'Username already exists']
+        required: [true, 'Username is required'],
+        min: [3, 'Username must contain atleast 3 characters'],
+        max: [50, 'Username must contain atmost 50 characters'],
+        unique: [true, 'Username already exists']
     },
-    name:{
-        type:String,
-        required: [true,'Name is required'],
+    name: {
+        type: String,
+        required: [true, 'Name is required'],
     },
     email: {
         type: String,
-        required: [true,'Email is required'],
-        unique: [true,'Email already exists']
+        required: [true, 'Email is required'],
+        unique: [true, 'Email already exists']
     },
     password: {
         type: String,
-        required: [true,'Password is required'],
+        required: [true, 'Password is required'],
         min: 6,
     },
     profilePicture: {
-        public_id:String,
-        url:String
+        public_id:
+        {
+            type: String,
+            default: null
+        },
+        url: {
+            type: String,
+            default: null
+        }
     },
+
     coverPicture: {
-        public_id:String,
-        url:String
+        public_id:
+        {
+            type: String,
+            default: null
+        },
+        url: {
+            type: String,
+            default: null
+        }
     },
-    bio:{
-        type:String,
-        max:50,
+    bio: {
+        type: String,
+        max: 50,
     },
     followers: {
         type: Array,
@@ -42,7 +57,7 @@ const userSchema = new mongoose.Schema({
         type: Array,
         default: []
     },
-    notifications:{
+    notifications: {
         type: Array,
         default: []
     },
@@ -51,7 +66,7 @@ const userSchema = new mongoose.Schema({
         default: false
     }
 },
-{timestamps:true}
+    { timestamps: true }
 )
 
 module.exports = mongoose.model('User', userSchema)

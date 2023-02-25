@@ -51,10 +51,9 @@ const login = async (req, res,next) => {
     try{
         foundUser = await User.findOne({$or:[{username:username_email},{email:username_email}]})
     }catch(err){
-        return next(new HttpError("Could not login.something went wrong",500))
+        return next(new HttpError("Could not login.Something went wrong",500))
     }
     if(!foundUser){
-        console.log(foundUser)
         return next(new HttpError("Credentials seems to be wrong!",400))
     }
     
@@ -77,7 +76,6 @@ const login = async (req, res,next) => {
         token:getToken(foundUser._id)
     })
 }
-console.log(process.env.JWT_SECRET)
 const getToken=(id)=>{
     return jwt.sign({id},process.env.JWT_SECRET,{expiresIn:'7d'})
 }

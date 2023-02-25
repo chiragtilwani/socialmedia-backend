@@ -13,7 +13,6 @@ const createPost = async (req, res, next) => {
         try {
             result = await cloudinary.uploader.upload(post, { folder: "socialMedia" })
         } catch (err) {
-            console.log(err)
             return next(new HttpError("Could not upload your post", 500))
         }
         const newPost = new Post({
@@ -45,19 +44,55 @@ const createPost = async (req, res, next) => {
 }
 
 const updatePost = async (req, res, next) => {
-    let post
+    let foundPost
+    // const { desc, url } = req.body
     try {
-        post = await Post.findById(req.params.id)
+        foundPost = await Post.findById(req.params.id)
     } catch (err) {
         return next(new HttpError("Something went wrong!", 500))
     }
 
-    if (!post) {
+    console.log(foundPost.creatorId + ' ' + req.body.userId)
+    if (!foundPost) {
         return next(new HttpError("Could not find post", 404))
     }
-    if (post.creatorId === req.body.userId) {
-        await post.updateOne({ $set: req.body })
-        res.status(200).json("Post successfully updated")
+    if (foundPost.creatorId === req.body.userId) {
+        const imgId = foundPost.post.public_id
+        if (imgId) {
+            await cloudinary.uploader.destroy(imgId)
+        }
+        if (req.body.url && req.body.desc) {
+            const imgResult = await cloudinary.uploader.upload(req.body.url, { folder: "socialMedia" })
+            await foundPost.updateOne({
+                $set: {
+                    desc: req.body.desc, post: {
+                        public_id: imgResult.public_id,
+                        url: imgResult.secure_url
+                    }
+                }
+            })
+            res.status(200).json("Post successfully updated")
+        }
+        if (req.body.url) {
+            const imgResult = await cloudinary.uploader.upload(req.body.url, { folder: "socialMedia" })
+            await foundPost.updateOne({
+                $set: {
+                    post: {
+                        public_id: imgResult.public_id,
+                        url: imgResult.secure_url
+                    }
+                }
+            })
+            res.status(200).json("Post successfully updated")
+        }
+        if (req.body.desc) {
+            await foundPost.updateOne({
+                $set: {
+                    desc: req.body.desc
+                }
+            })
+            res.status(200).json("Post successfully updated")
+        }
     } else {
         return next(new HttpError("You are not authorized to update this post", 400))
     }

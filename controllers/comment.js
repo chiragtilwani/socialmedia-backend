@@ -78,7 +78,6 @@ const updateComment = async (req, res, next) => {
 
 //***LIKE/DISLIKE COMMENT BY COMMENT ID***
 const likeDislikeComment = async (req, res, next) => {
-    console.log(req.body)
     let foundComment, creator, userWhoLikedComment;
     try {
         foundComment = await Comment.findById(req.params.id)
@@ -90,7 +89,6 @@ const likeDislikeComment = async (req, res, next) => {
     if (!foundComment) {
         return next(new HttpError("Could not find comment!", 404))
     }
-    console.log(userWhoLikedComment.username)
     if (!foundComment.likes.includes(req.body.userId)) {
         await foundComment.updateOne({ $push: { likes: req.body.userId } })
         if (foundComment.creatorId !== req.body.userId) {
