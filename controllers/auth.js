@@ -6,6 +6,9 @@ const jwt =require('jsonwebtoken')
 require("dotenv").config();
 const register = async (req, res,next) => {
     const { name,username, email, password } = req.body
+    if(username.includes(" ")){
+        return next(new HttpError('Username must not contain any white spaces'))
+    }
     //checking if email and username already exist
     let foundUser 
     try{

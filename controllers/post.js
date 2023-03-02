@@ -52,7 +52,6 @@ const updatePost = async (req, res, next) => {
         return next(new HttpError("Something went wrong!", 500))
     }
 
-    console.log(foundPost.creatorId + ' ' + req.body.userId)
     if (!foundPost) {
         return next(new HttpError("Could not find post", 404))
     }
@@ -71,7 +70,6 @@ const updatePost = async (req, res, next) => {
                     }
                 }
             })
-            res.status(200).json("Post successfully updated")
         }
         if (req.body.url) {
             const imgResult = await cloudinary.uploader.upload(req.body.url, { folder: "socialMedia" })
@@ -83,7 +81,6 @@ const updatePost = async (req, res, next) => {
                     }
                 }
             })
-            res.status(200).json("Post successfully updated")
         }
         if (req.body.desc) {
             await foundPost.updateOne({
@@ -91,8 +88,8 @@ const updatePost = async (req, res, next) => {
                     desc: req.body.desc
                 }
             })
-            res.status(200).json("Post successfully updated")
         }
+        res.status(200).json("Post successfully updated")
     } else {
         return next(new HttpError("You are not authorized to update this post", 400))
     }
