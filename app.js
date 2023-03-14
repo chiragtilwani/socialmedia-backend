@@ -47,6 +47,6 @@ app.use((error,req,res,next) => {
     res.status(error.code || 500).json({message:error.message || 'An unknown error occurred'})
 })
 
-app.listen(5000,() =>{
+app.listen(process.env.PORT || 5000,() =>{
     console.log("Backend server is running...")
 })
