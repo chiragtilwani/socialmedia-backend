@@ -107,7 +107,9 @@ const deletePost = async (req, res, next) => {
     }
     if (foundPost.creatorId === req.body.userId) {
         const imgId = foundPost.post.public_id
-        await cloudinary.uploader.destroy(imgId)
+        if (imgId) {
+            await cloudinary.uploader.destroy(imgId)
+        }
         await Post.findByIdAndDelete(foundPost._id)
         res.status(200).json("Post has been deleted successfully")
     } else {

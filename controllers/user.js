@@ -1,5 +1,6 @@
 const HttpError = require('../models/HttpError')
 const User = require('../models/User')
+const Post = require('../models/Post')
 const bcrypt = require('bcrypt')
 const cloudinary = require('../middleware/cloudinary')
 
@@ -54,13 +55,53 @@ const updateUser = async (req, res, next) => {
 }
 
 const deleteUser = async (req, res, next) => {
+    console.log(req.body + req.headers)
     if (req.body.userId === req.params.id || req.body.isAdmin) {
         try {
+            // deleting all the posts associated with this user
+            const postArray = await Post.find({})
+            await Promise.all(
+                postArray.map(post => {
+                    if (post.creatorId === req.params.id) {
+                        const postId = post.post.public_id
+                        if (postId) {
+                            cloudinary.uploader.destroy(postId)
+                        }
+                        post.delete()
+                    }
+                })
+            )
+            //deleting profile and cover of this user from cloudinary
+            const foundUser = await User.findById(req.params.id)
+            const profileId = foundUser.profilePicture.public_id
+            if (profileId) {
+                await cloudinary.uploader.destroy(profileId)
+            }
+            const coverId = foundUser.coverPicture.public_id
+            if (coverId) {
+                await cloudinary.uploader.destroy(coverId)
+            }
+            //founduser-user who is deleting account
+            //user-user to whom foundUser follows
+            await Promise.all(
+                foundUser.followings.map(uid=>{
+                    const user= User.findById(uid)
+                    user.updateOne({$pull:{followers:foundUser._id}})                    
+                })
+            )
+
+            await Promise.all(
+                foundUser.followers.map(uid=>{
+                    const user= User.findById(uid)
+                    user.updateOne({$pull:{followings:foundUser._id}})                    
+                })
+            )
+
             await User.findByIdAndDelete(req.params.id)
         } catch (err) {
-            return next(new HttpError("Something went wrong!", 500))
+            return next(new HttpError("Something went wrong!" + err, 500))
         }
-        
+
         res.status(200).json("Account has been deleted successfully!")
     } else {
         return next(new HttpError("You are not authorized to delete this user!", 422))

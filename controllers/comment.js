@@ -53,6 +53,8 @@ const deleteComment = async (req, res, next) => {
 
 //***UPDATE COMMENT BY COMMENT ID ***
 const updateComment = async (req, res, next) => {
+// params-commentid,body-currentuserid+text
+console.log(req.body)
     const { id } = req.params
     let foundComment
     try {
