@@ -41,7 +41,7 @@ const updateUser = async (req, res, next) => {
                 coverResult = await cloudinary.uploader.upload(coverUrl, { folder: "socialMedia" })
                 foundUser = await User.findByIdAndUpdate(req.params.id, { $set: { coverPicture: { public_id: coverResult.public_id, url: coverResult.secure_url } } })
             }
-            console.log(req.body)
+            
             // delete prev img and update new img
             foundUser = await User.findByIdAndUpdate(req.params.id, { $set: { name: name, username: username, bio: bio } })//$set will update only values present in object passed
         } catch (err) {
