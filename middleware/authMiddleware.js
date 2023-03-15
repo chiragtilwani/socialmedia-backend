@@ -21,17 +21,12 @@ const authMiddleware = async (req, res, next) => {
 
             next()
         } catch (error) {
-            //   console.log(error)
-            //   res.status(401)
-            //   throw new Error('Not authorized')
-            return next(new HttpError("Not authorized", 401))
+            return next(new HttpError("You are not authorized to perform this action", 401))
         }
     }
 
     if (!token) {
-        // res.status(401)
-        // throw new Error('Not authorized, no token')
-        return next(new HttpError("Not authorized", 401))
+        return next(new HttpError("You are not authorized to perform this action", 401))
     }
 }
 
