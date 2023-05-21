@@ -170,7 +170,23 @@ const getTimlinePost = async (req, res, next) => {
         const friendsPost = await Promise.all(
             currentUser.followings.map(id => Post.find({ creatorId: id }))
         )
-        res.status(200).json(currentUserPost.concat(...friendsPost))
+        let totalTimeLinePosts = currentUserPost.concat(...friendsPost).sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        )
+
+        const page = req.query.page || 1;
+        const pageSize = 10;
+        const skip = (page - 1) * pageSize;//to learn if page=1 (1-1)*pageSize=0 i.e for page 1 we will skip 0 documents which is true
+        const total = totalTimeLinePosts.length;
+        const pages = Math.ceil(total / pageSize);
+        console.log(pages)
+        let timeLinePostsToRender = [];
+        for (let i = skip; i <= (skip + pageSize) && totalTimeLinePosts[i]; i++) {
+            timeLinePostsToRender = [...timeLinePostsToRender, totalTimeLinePosts[i]]
+        }
+        res.status(200).json({
+            posts: timeLinePostsToRender, pages: pages
+        })
     } catch (err) {
         return next(new HttpError("Something went wrong", 500))
     }
@@ -178,7 +194,6 @@ const getTimlinePost = async (req, res, next) => {
 
 const getUserPost = async (req, res, next) => {
     try {
-        // const currentUser=await User.findById(req.params.userId)
         const currentUserPost = await Post.find({ creatorId: req.params.userId })
         res.status(200).json(currentUserPost)
     } catch (err) {
